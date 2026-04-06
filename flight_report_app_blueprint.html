@@ -1,0 +1,705 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+
+  .app { display: flex; gap: 0; min-height: 700px; }
+
+  /* Sidebar nav */
+  .sidebar {
+    width: 200px; min-width: 200px;
+    border-right: 0.5px solid var(--color-border-tertiary);
+    padding: 16px 0;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .sidebar-title {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+    color: var(--color-text-tertiary); padding: 0 16px 10px;
+    text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 16px; font-size: 13px; cursor: pointer;
+    color: var(--color-text-secondary); border-radius: 0;
+    transition: background .15s; border: none; background: none;
+    text-align: left; width: 100%;
+  }
+  .nav-item:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .nav-item.active { background: var(--color-background-secondary); color: var(--color-text-primary); font-weight: 500; }
+  .nav-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot-blue { background: #378ADD; }
+  .dot-green { background: #639922; }
+  .dot-amber { background: #BA7517; }
+  .dot-red { background: #E24B4A; }
+  .dot-purple { background: #7F77DD; }
+
+  /* Main content */
+  .main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* Screens */
+  .screen { display: none; flex: 1; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* Header bar */
+  .screen-header {
+    padding: 14px 20px; border-bottom: 0.5px solid var(--color-border-tertiary);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .screen-title { font-size: 15px; font-weight: 500; }
+  .btn {
+    font-size: 12px; padding: 6px 14px; border-radius: 20px;
+    border: 0.5px solid var(--color-border-secondary);
+    background: none; cursor: pointer; color: var(--color-text-primary);
+    font-family: var(--font-sans); transition: background .15s;
+  }
+  .btn:hover { background: var(--color-background-secondary); }
+  .btn-primary { background: #378ADD; color: #fff; border-color: #378ADD; }
+  .btn-primary:hover { background: #185FA5; border-color: #185FA5; }
+  .btn-danger { background: #E24B4A; color: #fff; border-color: #E24B4A; }
+  .btn-danger:hover { background: #A32D2D; }
+  .btn-success { background: #639922; color: #fff; border-color: #639922; }
+  .btn-success:hover { background: #3B6D11; }
+  .btn-row { display: flex; gap: 8px; }
+
+  /* ─── SCREEN 1: REPORTS LIST ─── */
+  .reports-list { flex: 1; padding: 16px 20px; overflow-y: auto; }
+  .report-card {
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+    cursor: pointer; transition: border-color .15s, background .15s;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .report-card:hover { border-color: var(--color-border-secondary); background: var(--color-background-secondary); }
+  .report-num {
+    font-size: 17px; font-weight: 500; min-width: 52px;
+    color: var(--color-text-secondary);
+  }
+  .report-num span { font-size: 10px; display: block; color: var(--color-text-tertiary); font-weight: 400; }
+  .report-info { flex: 1; }
+  .report-info-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .report-info-sub { font-size: 12px; color: var(--color-text-secondary); }
+  .report-badge {
+    font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; flex-shrink: 0;
+  }
+  .badge-signed { background: #EAF3DE; color: #3B6D11; }
+  .badge-unsigned { background: #FAEEDA; color: #854F0B; }
+  .badge-locked { background: #FCEBEB; color: #A32D2D; }
+  .filter-bar {
+    display: flex; gap: 8px; padding: 12px 20px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    flex-shrink: 0;
+  }
+  .filter-btn {
+    font-size: 12px; padding: 5px 12px; border-radius: 20px;
+    border: 0.5px solid var(--color-border-tertiary);
+    background: none; cursor: pointer; color: var(--color-text-secondary);
+    font-family: var(--font-sans); transition: all .15s;
+  }
+  .filter-btn.active {
+    background: var(--color-background-secondary);
+    border-color: var(--color-border-secondary);
+    color: var(--color-text-primary); font-weight: 500;
+  }
+
+  /* ─── SCREEN 2: FORM ─── */
+  .form-body { flex: 1; overflow-y: auto; padding: 0; }
+  .form-section {
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    padding: 14px 20px;
+  }
+  .form-section-title {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.07em;
+    color: var(--color-text-tertiary); text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .form-field { display: flex; flex-direction: column; gap: 4px; }
+  .form-field label { font-size: 11px; color: var(--color-text-secondary); }
+  .form-input {
+    font-size: 13px; padding: 7px 10px; border-radius: 7px;
+    border: 0.5px solid var(--color-border-secondary);
+    background: var(--color-background-primary);
+    color: var(--color-text-primary); font-family: var(--font-sans);
+    transition: border-color .15s;
+  }
+  .form-input:focus { outline: none; border-color: #378ADD; }
+  .form-input.readonly {
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary); cursor: default;
+  }
+  .form-textarea {
+    font-size: 13px; padding: 8px 10px; border-radius: 7px;
+    border: 0.5px solid var(--color-border-secondary);
+    background: var(--color-background-primary);
+    color: var(--color-text-primary); font-family: var(--font-sans);
+    resize: none; width: 100%;
+  }
+  .pencil-field {
+    border: 0.5px dashed var(--color-border-secondary);
+    border-radius: 7px; padding: 10px 12px; min-height: 64px;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--color-background-secondary);
+    color: var(--color-text-tertiary); font-size: 12px; cursor: pointer;
+    transition: border-color .15s;
+  }
+  .pencil-field:hover { border-color: var(--color-border-primary); }
+  .pencil-icon { font-size: 14px; opacity: .5; }
+  .sig-area {
+    border: 0.5px dashed var(--color-border-secondary);
+    border-radius: 8px; height: 90px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 4px;
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary); font-size: 12px; cursor: pointer;
+    transition: all .15s;
+  }
+  .sig-area:hover { border-color: #378ADD; color: #378ADD; }
+  .sig-area.signed {
+    border-style: solid; border-color: #639922;
+    background: #EAF3DE;
+  }
+  .sig-area.signed .sig-name { font-size: 22px; font-style: italic; color: #3B6D11; font-family: Georgia, serif; }
+  .sig-area.signed .sig-meta { font-size: 11px; color: #639922; }
+  .lock-banner {
+    background: #FCEBEB; border-bottom: 0.5px solid #F7C1C1;
+    padding: 9px 20px; display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #A32D2D; flex-shrink: 0;
+  }
+  .sync-banner {
+    background: #EAF3DE; border-bottom: 0.5px solid #C0DD97;
+    padding: 8px 20px; display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #3B6D11; flex-shrink: 0;
+  }
+
+  /* ─── SCREEN 3: ARCHITECTURE ─── */
+  .arch-body { flex: 1; padding: 20px; overflow-y: auto; }
+  .arch-section { margin-bottom: 24px; }
+  .arch-section-title { font-size: 13px; font-weight: 500; margin-bottom: 12px; color: var(--color-text-primary); }
+  .arch-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .arch-card {
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: 10px; padding: 14px; background: var(--color-background-primary);
+  }
+  .arch-card-icon { width: 32px; height: 32px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .arch-card-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .arch-card-sub { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+  .tech-stack { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tech-pill {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    border: 0.5px solid var(--color-border-tertiary);
+    color: var(--color-text-secondary);
+  }
+
+  /* ─── SCREEN 4: NUMBERING ─── */
+  .num-body { flex: 1; padding: 20px; overflow-y: auto; }
+  .seq-vis {
+    display: flex; align-items: center; gap: 0;
+    overflow-x: auto; padding: 16px 0 20px;
+  }
+  .seq-item {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    min-width: 80px;
+  }
+  .seq-circle {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 500; border: 0.5px solid;
+    flex-shrink: 0; transition: all .2s;
+  }
+  .seq-circle.done { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .seq-circle.current { background: #E6F1FB; border-color: #378ADD; color: #185FA5; }
+  .seq-circle.pending { background: var(--color-background-secondary); border-color: var(--color-border-tertiary); color: var(--color-text-tertiary); }
+  .seq-label { font-size: 11px; color: var(--color-text-secondary); text-align: center; }
+  .seq-line { flex: 1; height: 0.5px; background: var(--color-border-tertiary); margin-bottom: 26px; min-width: 16px; }
+
+  /* ─── SCREEN 5: AUTH ─── */
+  .auth-body { flex: 1; padding: 20px; overflow-y: auto; }
+  .auth-flow {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;
+  }
+  .auth-step {
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: 10px; padding: 16px; background: var(--color-background-primary);
+    position: relative;
+  }
+  .auth-step-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #E6F1FB; color: #185FA5;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500; margin-bottom: 10px;
+  }
+  .auth-step-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .auth-step-sub { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+  .totp-demo {
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: 10px; padding: 16px; text-align: center;
+    background: var(--color-background-secondary);
+  }
+  .totp-code {
+    font-size: 32px; font-weight: 500; letter-spacing: 8px;
+    color: #185FA5; margin: 12px 0 6px; font-family: var(--font-mono);
+  }
+  .totp-timer {
+    font-size: 11px; color: var(--color-text-tertiary);
+  }
+  .totp-bar {
+    height: 3px; border-radius: 2px; background: var(--color-border-tertiary);
+    margin-top: 8px; overflow: hidden;
+  }
+  .totp-fill {
+    height: 100%; border-radius: 2px; background: #378ADD;
+    animation: countdown 30s linear infinite;
+  }
+  @keyframes countdown { from { width: 100%; } to { width: 0%; } }
+
+  /* misc */
+  .divider { height: 0.5px; background: var(--color-border-tertiary); margin: 0 0 12px; }
+  .info-row { display: flex; gap: 6px; align-items: flex-start; margin-bottom: 8px; }
+  .info-dot { width: 5px; height: 5px; border-radius: 50%; background: #378ADD; margin-top: 5px; flex-shrink: 0; }
+  .info-text { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+  .highlight { color: var(--color-text-primary); font-weight: 500; }
+</style>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-title">Flight Reports</div>
+    <button class="nav-item active" onclick="showScreen('list')">
+      <span class="nav-dot dot-blue"></span> All reports
+    </button>
+    <button class="nav-item" onclick="showScreen('form')">
+      <span class="nav-dot dot-amber"></span> New / Edit
+    </button>
+    <button class="nav-item" onclick="showScreen('numbering')">
+      <span class="nav-dot dot-green"></span> Numbering
+    </button>
+    <button class="nav-item" onclick="showScreen('auth')">
+      <span class="nav-dot dot-purple"></span> Signatures
+    </button>
+    <button class="nav-item" onclick="showScreen('arch')">
+      <span class="nav-dot dot-red"></span> Architecture
+    </button>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- ─── SCREEN: LIST ─── -->
+    <div id="screen-list" class="screen active">
+      <div class="screen-header">
+        <div class="screen-title">Flight reports</div>
+        <button class="btn btn-primary" onclick="showScreen('form')">+ New report</button>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setFilter(this,'all')">All</button>
+        <button class="filter-btn" onclick="setFilter(this,'signed')">Signed</button>
+        <button class="filter-btn" onclick="setFilter(this,'unsigned')">Unsigned</button>
+      </div>
+      <div class="reports-list" id="reports-list"></div>
+    </div>
+
+    <!-- ─── SCREEN: FORM ─── -->
+    <div id="screen-form" class="screen">
+      <div id="lock-banner" class="lock-banner" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="8" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        This report is signed and locked. No modifications are allowed.
+      </div>
+      <div class="screen-header">
+        <div>
+          <div class="screen-title" id="form-title">Report #FR-2024-008</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px">Last saved 2 min ago</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="showScreen('list')">← Back</button>
+          <button id="save-btn" class="btn btn-success" onclick="saveReport()">Save draft</button>
+          <button id="sign-btn" class="btn btn-primary" onclick="openSigModal()">Sign &amp; lock</button>
+        </div>
+      </div>
+      <div class="sync-banner">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 0012 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M14 8a6 6 0 00-12 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M12 5l2 3 2-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Synced to Excel — last sync 14:32
+      </div>
+      <div class="form-body">
+        <!-- Section: Header info -->
+        <div class="form-section">
+          <div class="form-section-title">Flight information</div>
+          <div class="form-grid-3">
+            <div class="form-field"><label>Report no.</label><input class="form-input readonly" value="FR-2024-008" readonly></div>
+            <div class="form-field"><label>Date</label><input class="form-input" type="date" value="2024-11-18" id="f-date"></div>
+            <div class="form-field"><label>Aircraft reg.</label><input class="form-input" value="EC-MZT" id="f-reg"></div>
+            <div class="form-field"><label>Flight no.</label><input class="form-input" value="VY1234" id="f-flight"></div>
+            <div class="form-field"><label>Route</label><input class="form-input" value="BCN → MAD" id="f-route"></div>
+            <div class="form-field"><label>Aircraft type</label><input class="form-input" value="A320-200" id="f-type"></div>
+          </div>
+        </div>
+        <!-- Section: Crew -->
+        <div class="form-section">
+          <div class="form-section-title">Crew</div>
+          <div class="form-grid">
+            <div class="form-field"><label>Captain</label>
+              <div class="pencil-field" onclick="triggerPencil(this,'Cpt. García López')">
+                <span class="pencil-icon">✏️</span>
+                <span id="pencil-captain">Tap to write with Apple Pencil</span>
+              </div>
+            </div>
+            <div class="form-field"><label>First officer</label>
+              <div class="pencil-field" onclick="triggerPencil(this,'F/O Martínez Ruiz')">
+                <span class="pencil-icon">✏️</span>
+                <span id="pencil-fo">Tap to write with Apple Pencil</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Section: Observations -->
+        <div class="form-section">
+          <div class="form-section-title">Observations / remarks</div>
+          <div class="form-field" style="margin-bottom:10px">
+            <label>Remarks (handwriting → text)</label>
+            <div class="pencil-field" style="min-height:80px;align-items:flex-start;padding-top:12px" onclick="triggerPencil(this,'Minor turbulence at FL240. All systems nominal. Fuel on arrival: 4.2t.')">
+              <span class="pencil-icon">✏️</span>
+              <span id="pencil-remarks">Write with Apple Pencil — auto-converts to text</span>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-field"><label>Fuel on departure (t)</label><input class="form-input" value="6.8" id="f-fuel-dep"></div>
+            <div class="form-field"><label>Fuel on arrival (t)</label><input class="form-input" value="4.2" id="f-fuel-arr"></div>
+          </div>
+        </div>
+        <!-- Section: Signatures -->
+        <div class="form-section">
+          <div class="form-section-title">Signatures</div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Captain signature</label>
+              <div class="sig-area signed" id="sig-captain" onclick="handleSigClick('captain')">
+                <div class="sig-name">J. García</div>
+                <div class="sig-meta">18 Nov 2024 · 09:41:22 UTC</div>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Maintenance signature</label>
+              <div class="sig-area" id="sig-maint" onclick="handleSigClick('maint')">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 16l3-1 9-9-2-2-9 9-1 3z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M12 4l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                <span>Tap to sign</span>
+                <span style="font-size:11px;color:var(--color-text-tertiary)">External signer — auth required</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SCREEN: NUMBERING ─── -->
+    <div id="screen-numbering" class="screen">
+      <div class="screen-header">
+        <div class="screen-title">Sequential numbering</div>
+      </div>
+      <div class="num-body">
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.6">
+          Reports are numbered sequentially with a format of <span class="highlight">FR-YYYY-NNN</span>.
+          The counter is server-side, atomic, and gap-free — no report can be skipped or duplicated.
+        </div>
+
+        <div class="seq-vis">
+          <div class="seq-item"><div class="seq-circle done">005</div><div class="seq-label">Signed</div></div>
+          <div class="seq-line"></div>
+          <div class="seq-item"><div class="seq-circle done">006</div><div class="seq-label">Signed</div></div>
+          <div class="seq-line"></div>
+          <div class="seq-item"><div class="seq-circle done">007</div><div class="seq-label">Signed</div></div>
+          <div class="seq-line"></div>
+          <div class="seq-item"><div class="seq-circle current">008</div><div class="seq-label">In progress</div></div>
+          <div class="seq-line"></div>
+          <div class="seq-item"><div class="seq-circle pending">009</div><div class="seq-label">Pending</div></div>
+          <div class="seq-line"></div>
+          <div class="seq-item"><div class="seq-circle pending">010</div><div class="seq-label">Pending</div></div>
+        </div>
+
+        <div class="arch-section">
+          <div class="arch-section-title">How it works</div>
+          <div class="arch-cards">
+            <div class="arch-card">
+              <div class="arch-card-icon" style="background:#E6F1FB">🔢</div>
+              <div class="arch-card-title">Server-side counter</div>
+              <div class="arch-card-sub">An atomic increment in the database ensures each number is unique and sequential — no race conditions.</div>
+            </div>
+            <div class="arch-card">
+              <div class="arch-card-icon" style="background:#EAF3DE">📴</div>
+              <div class="arch-card-title">Offline mode</div>
+              <div class="arch-card-sub">When offline, a temporary local ID is used. The final sequential number is assigned on next sync.</div>
+            </div>
+            <div class="arch-card">
+              <div class="arch-card-icon" style="background:#FAEEDA">🔒</div>
+              <div class="arch-card-title">Immutable once signed</div>
+              <div class="arch-card-sub">Once a report is signed, its number is permanently locked. Deletion is blocked at the API level.</div>
+            </div>
+            <div class="arch-card">
+              <div class="arch-card-icon" style="background:#EEEDFE">📋</div>
+              <div class="arch-card-title">Audit trail</div>
+              <div class="arch-card-sub">Every gap in the sequence triggers an alert in the admin panel for compliance tracking.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SCREEN: AUTH ─── -->
+    <div id="screen-auth" class="screen">
+      <div class="screen-header">
+        <div class="screen-title">External signatures &amp; authentication</div>
+      </div>
+      <div class="auth-body">
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.6">
+          External personnel (mechanics, inspectors) can sign documents using a TOTP-based identity verification flow — no app installation needed on their device.
+        </div>
+
+        <div class="auth-flow">
+          <div class="auth-step">
+            <div class="auth-step-num">1</div>
+            <div class="auth-step-title">Pilot requests external signature</div>
+            <div class="auth-step-sub">Selects the signer's role and taps "Request signature". The app generates a time-limited signing session.</div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num">2</div>
+            <div class="auth-step-title">Signer receives notification</div>
+            <div class="auth-step-sub">A push notification or SMS is sent with a deep link and a 6-digit TOTP code valid for 30 seconds.</div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num">3</div>
+            <div class="auth-step-title">Identity verified</div>
+            <div class="auth-step-sub">The signer enters their TOTP code on the iPad. The server validates it against the signer's registered secret.</div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num">4</div>
+            <div class="auth-step-title">Signature recorded</div>
+            <div class="auth-step-sub">Name, role, timestamp (UTC), and device fingerprint are permanently attached to the document hash.</div>
+          </div>
+        </div>
+
+        <div class="totp-demo">
+          <div style="font-size:12px;color:var(--color-text-secondary)">Sample TOTP code — refreshes every 30s</div>
+          <div class="totp-code" id="totp-display">--  ---</div>
+          <div class="totp-timer">Valid for <span id="totp-secs">30</span> seconds</div>
+          <div class="totp-bar"><div class="totp-fill" id="totp-fill"></div></div>
+        </div>
+
+        <div style="margin-top:20px">
+          <div class="arch-section-title">Signature types supported</div>
+          <div class="arch-cards" style="margin-top:10px">
+            <div class="arch-card">
+              <div class="arch-card-title">Captain</div>
+              <div class="arch-card-sub">In-app, Apple Pencil or finger. Embedded in the app session.</div>
+              <div class="tech-stack"><span class="tech-pill">In-app</span><span class="tech-pill">Pencil</span></div>
+            </div>
+            <div class="arch-card">
+              <div class="arch-card-title">First Officer</div>
+              <div class="arch-card-sub">Same as captain. Both must sign for document to be fully sealed.</div>
+              <div class="tech-stack"><span class="tech-pill">In-app</span><span class="tech-pill">Optional</span></div>
+            </div>
+            <div class="arch-card">
+              <div class="arch-card-title">Mechanic / MRO</div>
+              <div class="arch-card-sub">External. TOTP via authenticator app (Google Auth, Authy, etc.).</div>
+              <div class="tech-stack"><span class="tech-pill">TOTP</span><span class="tech-pill">External</span></div>
+            </div>
+            <div class="arch-card">
+              <div class="arch-card-title">Inspector</div>
+              <div class="arch-card-sub">External. Can also use email magic link as fallback for TOTP.</div>
+              <div class="tech-stack"><span class="tech-pill">TOTP</span><span class="tech-pill">Magic link</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SCREEN: ARCHITECTURE ─── -->
+    <div id="screen-arch" class="screen">
+      <div class="screen-header">
+        <div class="screen-title">Technical architecture</div>
+      </div>
+      <div class="arch-body">
+
+        <div class="arch-section">
+          <div class="arch-section-title">Recommended tech stack</div>
+          <div class="arch-cards">
+            <div class="arch-card">
+              <div class="arch-card-icon" style="background:#E6F1FB">📱</div>
+              <div class="arch-card-title">iPad app</div>
+              <div class="arch-card-sub">Native SwiftUI for best Apple Pencil + PencilKit integration.</div>
+              <div class="tech-stack"><span class="tech-pill">SwiftUI</span><span class="tech-pill">PencilKit</span><span class="tech-pill">Core Data</span></div>
+            </div>
+            <div class="arch-card">
+              <div class="arch-card-icon" style="background:#EEEDFE">✍️</div>
+              <div class="arch-card-title">Handwriting</div>
+              <div class="arch-card-sub">Apple's Vision framework for on-device handwriting recognition — no cloud needed.</div>
+              <div class="tech-stack"><span class="tech-pill">VNRecognizeTextRequest</span><span class="tech-pill">On-device</span></div>
+            </div>
+            <div class="arch-card">
+              <div class="arch-card-icon" style="background:#EAF3DE">☁️</div>
+              <div class="arch-card-title">Backend</div>
+              <div class="arch-card-sub">REST or GraphQL API. Can use Firebase, Supabase, or custom Node/Python.</div>
+              <div class="tech-stack"><span class="tech-pill">REST API</span><span class="tech-pill">PostgreSQL</span></div>
+            </div>
+            <div class="arch-card">
+              <div class="arch-card-icon" style="background:#FAEEDA">📊</div>
+              <div class="arch-card-title">Excel sync</div>
+              <div class="arch-card-sub">Microsoft Graph API syncs to a shared .xlsx file on OneDrive/SharePoint automatically.</div>
+              <div class="tech-stack"><span class="tech-pill">MS Graph API</span><span class="tech-pill">OneDrive</span></div>
+            </div>
+            <div class="arch-card">
+              <div class="arch-card-icon" style="background:#FCEBEB">🔐</div>
+              <div class="arch-card-title">Auth / TOTP</div>
+              <div class="arch-card-sub">TOTP via RFC 6238. Users register via QR code in any authenticator app.</div>
+              <div class="tech-stack"><span class="tech-pill">RFC 6238</span><span class="tech-pill">HMAC-SHA1</span></div>
+            </div>
+            <div class="arch-card">
+              <div class="arch-card-icon" style="background:#E1F5EE">📴</div>
+              <div class="arch-card-title">Offline support</div>
+              <div class="arch-card-sub">Core Data local storage. Background sync queue flushes on reconnect.</div>
+              <div class="tech-stack"><span class="tech-pill">Core Data</span><span class="tech-pill">Sync queue</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arch-section">
+          <div class="arch-section-title">Key security constraints</div>
+          <div class="info-row"><div class="info-dot"></div><div class="info-text"><span class="highlight">Signed reports are cryptographically sealed</span> — a SHA-256 hash of the full document is stored at signing time. Any modification breaks the hash.</div></div>
+          <div class="info-row"><div class="info-dot"></div><div class="info-text"><span class="highlight">Timestamps are server-side UTC</span> — the device clock cannot be manipulated to alter the recorded signature time.</div></div>
+          <div class="info-row"><div class="info-dot"></div><div class="info-text"><span class="highlight">Sequential numbering uses a PostgreSQL sequence</span> — atomic, gap-free, resistant to concurrent writes.</div></div>
+          <div class="info-row"><div class="info-dot"></div><div class="info-text"><span class="highlight">TOTP codes expire in 30 seconds</span> — even if intercepted, they cannot be reused or replayed.</div></div>
+          <div class="info-row"><div class="info-dot"></div><div class="info-text"><span class="highlight">View-only mode</span> for signed reports is enforced at both the UI layer (all fields disabled) and the API layer (PUT/PATCH blocked).</div></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Signature modal -->
+<div id="sig-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center;">
+  <div style="background:var(--color-background-primary);border-radius:14px;padding:24px;width:360px;border:0.5px solid var(--color-border-secondary)">
+    <div style="font-size:15px;font-weight:500;margin-bottom:6px">Sign &amp; lock document</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.5">Once signed, this report cannot be edited. The current timestamp will be recorded.</div>
+    <div style="border:0.5px solid var(--color-border-secondary);border-radius:8px;height:90px;background:var(--color-background-secondary);margin-bottom:16px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--color-text-tertiary)">Draw your signature here</div>
+    <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:20px">Timestamp: <strong id="modal-ts" style="color:var(--color-text-secondary)"></strong></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="closeSigModal()">Cancel</button>
+      <button class="btn btn-success" onclick="confirmSign()">Confirm signature</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const reports = [
+    { id:'FR-2024-008', date:'2024-11-18', route:'BCN → MAD', aircraft:'EC-MZT', status:'unsigned' },
+    { id:'FR-2024-007', date:'2024-11-17', route:'MAD → VLC', aircraft:'EC-MZP', status:'signed' },
+    { id:'FR-2024-006', date:'2024-11-16', route:'VLC → BCN', aircraft:'EC-MZT', status:'signed' },
+    { id:'FR-2024-005', date:'2024-11-15', route:'BCN → SVQ', aircraft:'EC-MZR', status:'signed' },
+    { id:'FR-2024-004', date:'2024-11-14', route:'SVQ → MAD', aircraft:'EC-MZP', status:'signed' },
+  ];
+
+  let currentFilter = 'all';
+
+  function renderReports() {
+    const list = document.getElementById('reports-list');
+    const filtered = reports.filter(r => currentFilter === 'all' || r.status === currentFilter);
+    list.innerHTML = filtered.map(r => `
+      <div class="report-card" onclick="openReport('${r.id}','${r.status}')">
+        <div class="report-num">${r.id.split('-')[2]}<span>${r.id}</span></div>
+        <div class="report-info">
+          <div class="report-info-title">${r.route} · ${r.aircraft}</div>
+          <div class="report-info-sub">${r.date}</div>
+        </div>
+        <span class="report-badge ${r.status==='signed'?'badge-signed':'badge-unsigned'}">${r.status==='signed'?'Signed':'Unsigned'}</span>
+      </div>
+    `).join('');
+  }
+
+  function setFilter(el, val) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    currentFilter = val;
+    renderReports();
+  }
+
+  function openReport(id, status) {
+    document.getElementById('form-title').textContent = 'Report #' + id;
+    const locked = status === 'signed';
+    document.getElementById('lock-banner').style.display = locked ? 'flex' : 'none';
+    document.getElementById('save-btn').style.display = locked ? 'none' : '';
+    document.getElementById('sign-btn').style.display = locked ? 'none' : '';
+    document.querySelectorAll('.form-input:not(.readonly)').forEach(i => {
+      i.classList.toggle('readonly', locked);
+      i.readOnly = locked;
+    });
+    showScreen('form');
+  }
+
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    const navMap = { list:0, form:1, numbering:2, auth:3, arch:4 };
+    document.querySelectorAll('.nav-item')[navMap[name] ?? 0].classList.add('active');
+  }
+
+  function saveReport() {
+    const btn = document.getElementById('save-btn');
+    btn.textContent = 'Saving…';
+    setTimeout(() => { btn.textContent = 'Saved ✓'; setTimeout(() => { btn.textContent = 'Save draft'; }, 1500); }, 800);
+  }
+
+  function triggerPencil(el, text) {
+    const span = el.querySelector('span:last-child');
+    span.textContent = '…recognising…';
+    el.style.borderStyle = 'solid';
+    el.style.borderColor = '#378ADD';
+    setTimeout(() => {
+      span.textContent = text;
+      span.style.color = 'var(--color-text-primary)';
+      el.style.borderColor = '#639922';
+    }, 900);
+  }
+
+  function handleSigClick(role) {
+    if (role === 'captain') return;
+    openSigModal();
+  }
+
+  function openSigModal() {
+    const now = new Date();
+    document.getElementById('modal-ts').textContent = now.toUTCString().replace('GMT','UTC');
+    document.getElementById('sig-modal').style.display = 'flex';
+  }
+
+  function closeSigModal() {
+    document.getElementById('sig-modal').style.display = 'none';
+  }
+
+  function confirmSign() {
+    closeSigModal();
+    const sig = document.getElementById('sig-maint');
+    sig.className = 'sig-area signed';
+    sig.innerHTML = '<div class="sig-name">A. Pérez</div><div class="sig-meta">' + new Date().toUTCString().replace('GMT','UTC') + '</div>';
+    document.getElementById('lock-banner').style.display = 'flex';
+    document.getElementById('save-btn').style.display = 'none';
+    document.getElementById('sign-btn').style.display = 'none';
+  }
+
+  // TOTP demo
+  function genTOTP() {
+    const d = new Date();
+    const secs = 30 - (d.getSeconds() % 30);
+    document.getElementById('totp-secs').textContent = secs;
+    const base = Math.floor(d.getTime() / 30000);
+    const code = String(((base * 374761) % 1000000)).padStart(6, '0');
+    document.getElementById('totp-display').textContent = code.slice(0,3) + '  ' + code.slice(3);
+    const fill = document.getElementById('totp-fill');
+    if (fill) { fill.style.animation = 'none'; fill.style.width = (secs/30*100)+'%'; setTimeout(()=>{ fill.style.animation='countdown 30s linear infinite'; },50); }
+  }
+  genTOTP();
+  setInterval(genTOTP, 1000);
+
+  renderReports();
+</script>
